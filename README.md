@@ -1,1 +1,1 @@
-Sample patches for CMajor
+Sample patches for [CMajor](https://cmajor.dev/)
