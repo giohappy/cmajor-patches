@@ -36,6 +36,7 @@ processor PlayHeadProcessor {
     input stream float in; 
     output stream float out; 
 
+    let midiOutFreq = 220.f;
     int64 lastFrame = 0;
     bool isPlaying = false;
     float sr = processor.frequency;
@@ -54,13 +55,13 @@ processor PlayHeadProcessor {
             int64 modFrame = lastFrame % int64(sr);
             if (modFrame == 0 && isPlaying) {
                 std::notes::NoteOn noteOn;
-                noteOn.pitch = 64.f;
+                noteOn.pitch = std::notes::frequencyToNote(midiOutFreq);
                 noteOn.velocity = 1.0f;
                 eventOut <- noteOn;
             }
             if (modFrame == duration) {
                 std::notes::NoteOff noteOff;
-                noteOff.pitch = 64.f;
+                noteOff.pitch = std::notes::frequencyToNote(midiOutFreq);
                 noteOff.velocity = 1.0f;
                 eventOut <- noteOff;
             }
