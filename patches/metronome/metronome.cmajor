@@ -1,6 +1,7 @@
 graph metronome  [[main]]
 {
     output stream float out;
+    output event std::midi::Message midiOut;
     input event std::timeline::Tempo tempoIn;
     input event std::timeline::TransportState transportStateIn;
     input event std::timeline::Position positionIn;
@@ -23,12 +24,15 @@ graph metronome  [[main]]
     node sine = std::oscillators::Sine (float, 440);
     node playheadProcessor = PlayHeadProcessor();
     connection sine -> playheadProcessor.in;
+    connection playheadProcessor.eventOut -> std::midi::NoteToMIDI -> midiOut;
     connection playheadProcessor.out -> out;
 }
 
 processor PlayHeadProcessor {
     input event std::timeline::Position position;
     input event std::timeline::TransportState ts;
+    output event (std::notes::NoteOn,
+                  std::notes::NoteOff) eventOut;
     input stream float in; 
     output stream float out; 
 
@@ -48,6 +52,18 @@ processor PlayHeadProcessor {
     void main(){
         loop {
             int64 modFrame = lastFrame % int64(sr);
+            if (modFrame == 0 && isPlaying) {
+                std::notes::NoteOn noteOn;
+                noteOn.pitch = 64.f;
+                noteOn.velocity = 1.0f;
+                eventOut <- noteOn;
+            }
+            if (modFrame == duration) {
+                std::notes::NoteOff noteOff;
+                noteOff.pitch = 64.f;
+                noteOff.velocity = 1.0f;
+                eventOut <- noteOff;
+            }
             float decay = (duration - float(modFrame)) / duration;
             float amp = ((modFrame < duration) && isPlaying) ? 0.15f : 0.0f;
             out <- amp*in*decay;
