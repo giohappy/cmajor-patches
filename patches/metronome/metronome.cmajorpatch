@@ -1,0 +1,17 @@
+{
+    "CmajorVersion":    1,
+    "ID":               "com.your_name.your_patch_ID",
+    "version":          "1.0",
+    "name":             "metronome",
+    "description":      "metronome",
+    "category":         "generator",
+    "manufacturer":     "Your Company Goes Here",
+    "isInstrument":     true,
+    "source":           "metronome.cmajor",
+    "view":             {
+        "src": "index.js",
+        "width": 500,
+        "height": 250,
+        "resizable": false
+    }
+}

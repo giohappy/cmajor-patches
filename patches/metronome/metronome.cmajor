@@ -1,0 +1,62 @@
+graph metronome  [[main]]
+{
+    output stream float out;
+    input event std::timeline::Tempo tempoIn;
+    input event std::timeline::TransportState transportStateIn;
+    input event std::timeline::Position positionIn;
+    output event float bpm;
+    output event std::timeline::Position positionOut;
+
+    event tempoIn (std::timeline::Tempo tempo) {
+        bpm <- tempo.bpm;
+    }
+
+    event positionIn (std::timeline::Position p) {
+        playheadProcessor.position <- p;
+        positionOut <- p;
+    }
+
+    event transportStateIn (std::timeline::TransportState ts){
+        playheadProcessor.ts <- ts;
+    }
+
+    node sine = std::oscillators::Sine (float, 440);
+    node playheadProcessor = PlayHeadProcessor();
+    connection sine -> playheadProcessor.in;
+    connection playheadProcessor.out -> out;
+}
+
+processor PlayHeadProcessor {
+    input event std::timeline::Position position;
+    input event std::timeline::TransportState ts;
+    input stream float in; 
+    output stream float out; 
+
+    int64 lastFrame = 0;
+    bool isPlaying = false;
+    float sr = processor.frequency;
+    let duration = int(sr/2);
+
+    event position (std::timeline::Position p){
+        lastFrame = p.frameIndex;
+    }
+
+    event ts (std::timeline::TransportState ts){
+        isPlaying = (ts.flags & 1) == 1;
+    }
+
+    void main(){
+        loop {
+            int64 modFrame = lastFrame % int64(sr);
+            float decay = (duration - float(modFrame)) / duration;
+            float amp = ((modFrame < duration) && isPlaying) ? 0.15f : 0.0f;
+            out <- amp*in*decay;
+            ++lastFrame;
+            advance();
+        }
+    }
+}
+
+
+
+
