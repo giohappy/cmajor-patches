@@ -39,7 +39,7 @@ processor PlayHeadProcessor {
     let midiOutFreq = 220.f;
     int64 lastFrame = 0;
     bool isPlaying = false;
-    float sr = processor.frequency;
+    float sr = float32(processor.frequency);
     let duration = int(sr/2);
 
     event position (std::timeline::Position p){
